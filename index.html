@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Planner</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f7;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e4e6ed;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .logo { font-size: 18px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.3px; }
+    .logo span { color: #5046e5; }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: #f0f2f7;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .tab {
+      padding: 6px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      color: #777;
+      transition: all 0.15s;
+    }
+    .tab.active { background: #fff; color: #5046e5; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* ── Layout ── */
+    .main { max-width: 1300px; margin: 0 auto; padding: 24px 24px 48px; }
+
+    /* ── Week Nav ── */
+    .week-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .nav-arrow {
+      background: #f0f2f7;
+      border: none;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      color: #444;
+    }
+    .nav-arrow:hover { background: #e0e2eb; }
+    .week-info { text-align: center; }
+    .week-info h2 { font-size: 17px; font-weight: 600; }
+    .week-info p { font-size: 12px; color: #999; margin-top: 2px; }
+    .nav-right { display: flex; gap: 8px; align-items: center; }
+    .btn-today {
+      background: #5046e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    .btn-today:hover { background: #4338ca; }
+
+    /* ── Progress ── */
+    .progress-bar-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .progress-label { font-size: 13px; color: #777; white-space: nowrap; }
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: #e4e6ed;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5046e5, #7c3aed);
+      border-radius: 4px;
+      transition: width 0.35s ease;
+    }
+    .progress-count { font-size: 13px; font-weight: 600; color: #5046e5; white-space: nowrap; }
+
+    /* ── Days Grid ── */
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 960px) {
+      .days-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .days-grid { grid-template-columns: 1fr; }
+    }
+
+    .day-col {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s;
+    }
+    .day-col:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+
+    .day-col.is-today .day-head { background: #5046e5; }
+    .day-col.is-today .day-name { color: rgba(255,255,255,0.75); }
+    .day-col.is-today .day-num { color: #fff; }
+
+    .day-head {
+      background: #f7f8fb;
+      border-bottom: 1px solid #e4e6ed;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .day-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; }
+    .day-num { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+
+    .day-body { padding: 8px; flex: 1; display: flex; flex-direction: column; }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 7px 6px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.12s;
+      position: relative;
+    }
+    .task-item:hover { background: #f0f2f7; }
+    .task-item.done .task-text { text-decoration: line-through; color: #bbb; }
+
+    .check-circle {
+      width: 17px;
+      height: 17px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      font-size: 10px;
+      color: transparent;
+    }
+    .task-item.done .check-circle { background: #5046e5; border-color: #5046e5; color: #fff; }
+
+    .task-text { font-size: 12.5px; color: #333; line-height: 1.4; flex: 1; word-break: break-word; }
+
+    .recurring-badge {
+      font-size: 9px;
+      background: #ede9fe;
+      color: #7c3aed;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 600;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 3px;
+    }
+
+    .task-del {
+      opacity: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 15px;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.12s, opacity 0.12s;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 1px;
+    }
+    .task-item:hover .task-del { opacity: 1; }
+    .task-del:hover { color: #ef4444; }
+
+    .add-row {
+      width: 100%;
+      padding: 6px 4px;
+      background: none;
+      border: 1px dashed #dde0ea;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 11.5px;
+      color: #bbb;
+      transition: all 0.15s;
+      margin-top: 6px;
+    }
+    .add-row:hover { border-color: #5046e5; color: #5046e5; background: #f5f3ff; }
+
+    .no-tasks { font-size: 11px; color: #ccc; text-align: center; padding: 12px 0 4px; flex: 1; }
+
+    /* ── Recurring View ── */
+    .recurring-view { display: none; }
+    .recurring-view.active { display: block; }
+    .week-view { display: none; }
+    .week-view.active { display: block; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .section-header h2 { font-size: 18px; font-weight: 600; }
+    .section-header p { font-size: 13px; color: #888; margin-top: 3px; }
+
+    .btn-primary {
+      background: #5046e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #4338ca; }
+
+    .rec-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .rec-item {
+      background: #fff;
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      transition: box-shadow 0.15s;
+    }
+    .rec-item:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+
+    .rec-day-tag {
+      background: #ede9fe;
+      color: #7c3aed;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      min-width: 48px;
+      text-align: center;
+    }
+    .rec-item-title { flex: 1; font-size: 14px; color: #333; }
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 18px;
+      padding: 2px 4px;
+      transition: color 0.12s;
+      line-height: 1;
+    }
+    .btn-icon:hover { color: #ef4444; }
+
+    .empty-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 56px 32px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .empty-box .icon { font-size: 44px; margin-bottom: 14px; }
+    .empty-box h3 { font-size: 16px; margin-bottom: 8px; }
+    .empty-box p { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    /* ── Modals ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 420px;
+      margin: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+      animation: pop .18s ease;
+    }
+    @keyframes pop {
+      from { transform: scale(0.95) translateY(-8px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 20px; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #e4e6ed;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1a1a2e;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: #5046e5;
+      box-shadow: 0 0 0 3px rgba(80,70,229,0.12);
+    }
+
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; }
+    .btn-cancel {
+      background: #f0f2f7;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #e0e2eb; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">Weekly<span>Plan</span></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('week')">This Week</button>
+    <button class="tab" onclick="switchTab('recurring')">Recurring Tasks</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── Week View ── -->
+  <div class="week-view active" id="weekView">
+
+    <div class="week-nav">
+      <button class="nav-arrow" onclick="changeWeek(-1)">&#8592;</button>
+      <div class="week-info">
+        <h2 id="weekTitle"></h2>
+        <p id="weekRange"></p>
+      </div>
+      <div class="nav-right">
+        <button class="btn-today" onclick="goToday()">Today</button>
+        <button class="nav-arrow" onclick="changeWeek(1)">&#8594;</button>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <span class="progress-label">Weekly Progress</span>
+      <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+      <span class="progress-count" id="progCount">0 / 0</span>
+    </div>
+
+    <div class="days-grid" id="daysGrid"></div>
+  </div>
+
+  <!-- ── Recurring View ── -->
+  <div class="recurring-view" id="recurringView">
+    <div class="section-header">
+      <div>
+        <h2>Recurring Tasks</h2>
+        <p>These auto-appear every week on the selected day</p>
+      </div>
+      <button class="btn-primary" onclick="openRecModal()">+ Add Recurring Task</button>
+    </div>
+    <div class="rec-list" id="recList"></div>
+  </div>
+
+</div>
+
+<!-- Add One-off Task Modal -->
+<div class="overlay" id="taskOverlay">
+  <div class="modal">
+    <div class="modal-title" id="taskModalTitle">Add Task</div>
+    <div class="field">
+      <label>Task</label>
+      <input type="text" id="taskInput" placeholder="What needs to be done?" maxlength="140" />
+    </div>
+    <div class="field">
+      <label>Due Day</label>
+      <select id="taskDay">
+        <option value="Mon">Monday</option>
+        <option value="Tue">Tuesday</option>
+        <option value="Wed">Wednesday</option>
+        <option value="Thu">Thursday</option>
+        <option value="Fri">Friday</option>
+        <option value="Sat">Saturday</option>
+        <option value="Sun">Sunday</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeOverlay('taskOverlay')">Cancel</button>
+      <button class="btn-primary" onclick="saveTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Recurring Task Modal -->
+<div class="overlay" id="recOverlay">
+  <div class="modal">
+    <div class="modal-title">Add Recurring Task</div>
+    <div class="field">
+      <label>Task</label>
+      <input type="text" id="recInput" placeholder="e.g. Team standup, Weekly review…" maxlength="140" />
+    </div>
+    <div class="field">
+      <label>Repeats every</label>
+      <select id="recDay">
+        <option value="Mon">Monday</option>
+        <option value="Tue">Tuesday</option>
+        <option value="Wed">Wednesday</option>
+        <option value="Thu">Thursday</option>
+        <option value="Fri">Friday</option>
+        <option value="Sat">Saturday</option>
+        <option value="Sun">Sunday</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeOverlay('recOverlay')">Cancel</button>
+      <button class="btn-primary" onclick="saveRecurring()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── Constants ───────────────────────────────────────────────────────────────
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const FULL  = { Mon:'Monday', Tue:'Tuesday', Wed:'Wednesday', Thu:'Thursday', Fri:'Friday', Sat:'Saturday', Sun:'Sunday' };
+
+  // ─── State ───────────────────────────────────────────────────────────────────
+  let weekOffset = 0;
+
+  // ─── Storage ─────────────────────────────────────────────────────────────────
+  function load() {
+    try { return JSON.parse(localStorage.getItem('wp2025') || '{}'); } catch { return {}; }
+  }
+  function save(d) { localStorage.setItem('wp2025', JSON.stringify(d)); }
+  function db() {
+    const d = load();
+    d.recurring   = d.recurring   || [];
+    d.tasks       = d.tasks       || {};
+    d.completions = d.completions || {};
+    return d;
+  }
+
+  // ─── Week helpers ─────────────────────────────────────────────────────────────
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayN = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayN);
+    const y = d.getUTCFullYear();
+    const w = Math.ceil(((d - new Date(Date.UTC(y,0,1))) / 86400000 + 1) / 7);
+    return `${y}-W${String(w).padStart(2,'0')}`;
+  }
+
+  function weekDates(offset) {
+    const now = new Date();
+    now.setDate(now.getDate() + offset * 7);
+    const mon = getMonday(now);
+    return DAYS.map((_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
+  }
+
+  function isToday(date) {
+    const t = new Date();
+    return date.getDate()===t.getDate() && date.getMonth()===t.getMonth() && date.getFullYear()===t.getFullYear();
+  }
+
+  function fmt(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+
+  // ─── Tab switching ────────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      t.classList.toggle('active', (tab==='week' && i===0) || (tab==='recurring' && i===1));
+    });
+    document.getElementById('weekView').classList.toggle('active', tab==='week');
+    document.getElementById('recurringView').classList.toggle('active', tab==='recurring');
+    if (tab === 'recurring') renderRecurring();
+  }
+
+  // ─── Week navigation ──────────────────────────────────────────────────────────
+  function changeWeek(n) { weekOffset += n; render(); }
+  function goToday() { weekOffset = 0; render(); }
+
+  // ─── Modal helpers ────────────────────────────────────────────────────────────
+  function openOverlay(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeOverlay(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // ─── Add one-off task ─────────────────────────────────────────────────────────
+  function openTaskModal(day) {
+    document.getElementById('taskModalTitle').textContent = `Add Task — ${FULL[day]}`;
+    document.getElementById('taskDay').value = day;
+    document.getElementById('taskInput').value = '';
+    openOverlay('taskOverlay');
+    setTimeout(() => document.getElementById('taskInput').focus(), 80);
+  }
+
+  function saveTask() {
+    const title = document.getElementById('taskInput').value.trim();
+    const day   = document.getElementById('taskDay').value;
+    if (!title) return;
+    const d = db();
+    const wk = isoWeek(weekDates(weekOffset)[0]);
+    d.tasks[wk] = d.tasks[wk] || [];
+    d.tasks[wk].push({ id: uid(), title, day });
+    save(d);
+    closeOverlay('taskOverlay');
+    render();
+  }
+
+  // ─── Recurring tasks ──────────────────────────────────────────────────────────
+  function openRecModal() {
+    document.getElementById('recInput').value = '';
+    openOverlay('recOverlay');
+    setTimeout(() => document.getElementById('recInput').focus(), 80);
+  }
+
+  function saveRecurring() {
+    const title = document.getElementById('recInput').value.trim();
+    const day   = document.getElementById('recDay').value;
+    if (!title) return;
+    const d = db();
+    d.recurring.push({ id: uid(), title, day });
+    save(d);
+    closeOverlay('recOverlay');
+    renderRecurring();
+    render();
+  }
+
+  function deleteRecurring(id) {
+    const d = db();
+    d.recurring = d.recurring.filter(t => t.id !== id);
+    save(d);
+    renderRecurring();
+    render();
+  }
+
+  // ─── Toggle completion ────────────────────────────────────────────────────────
+  function toggleDone(taskId) {
+    const d  = db();
+    const wk = isoWeek(weekDates(weekOffset)[0]);
+    d.completions[wk] = d.completions[wk] || {};
+    if (d.completions[wk][taskId]) delete d.completions[wk][taskId];
+    else d.completions[wk][taskId] = true;
+    save(d);
+    render();
+  }
+
+  // ─── Delete one-off task ──────────────────────────────────────────────────────
+  function deleteTask(id) {
+    const d  = db();
+    const wk = isoWeek(weekDates(weekOffset)[0]);
+    d.tasks[wk] = (d.tasks[wk] || []).filter(t => t.id !== id);
+    if (d.completions[wk]) delete d.completions[wk][id];
+    save(d);
+    render();
+  }
+
+  // ─── Sanitize ─────────────────────────────────────────────────────────────────
+  function esc(s) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(s));
+    return div.innerHTML;
+  }
+
+  // ─── Render week view ─────────────────────────────────────────────────────────
+  function render() {
+    const d     = db();
+    const dates = weekDates(weekOffset);
+    const wk    = isoWeek(dates[0]);
+    const comp  = d.completions[wk] || {};
+    const manual = d.tasks[wk] || [];
+
+    // Header
+    const offset = weekOffset;
+    document.getElementById('weekTitle').textContent =
+      offset === 0 ? 'Current Week' :
+      offset  < 0  ? `${Math.abs(offset)} week${Math.abs(offset)>1?'s':''} ago` :
+                     `${offset} week${offset>1?'s':''} ahead`;
+    document.getElementById('weekRange').textContent = `${fmt(dates[0])} – ${fmt(dates[6])}`;
+
+    // Progress
+    let total = 0, done = 0;
+    DAYS.forEach(day => {
+      const all = [
+        ...d.recurring.filter(t => t.day === day),
+        ...manual.filter(t => t.day === day)
+      ];
+      total += all.length;
+      all.forEach(t => { if (comp[t.id]) done++; });
+    });
+    document.getElementById('progCount').textContent = `${done} / ${total} tasks`;
+    document.getElementById('progFill').style.width = total ? `${(done/total)*100}%` : '0%';
+
+    // Days
+    const grid = document.getElementById('daysGrid');
+    grid.innerHTML = '';
+    dates.forEach((date, i) => {
+      const day = DAYS[i];
+      const rec = d.recurring.filter(t => t.day === day);
+      const man = manual.filter(t => t.day === day);
+      const allTasks = [...rec.map(t => ({...t, recurring:true})), ...man.map(t => ({...t, recurring:false}))];
+
+      let tasksHtml = '';
+      allTasks.forEach(t => {
+        const isDone = !!comp[t.id];
+        const checkmark = isDone ? '✓' : '';
+        if (t.recurring) {
+          tasksHtml += `
+            <div class="task-item${isDone?' done':''}" onclick="toggleDone('${t.id}')">
+              <div class="check-circle">${checkmark}</div>
+              <div class="task-text">${esc(t.title)}</div>
+              <span class="recurring-badge">↻</span>
+            </div>`;
+        } else {
+          tasksHtml += `
+            <div class="task-item${isDone?' done':''}">
+              <div class="check-circle" onclick="toggleDone('${t.id}')">${checkmark}</div>
+              <div class="task-text" onclick="toggleDone('${t.id}')">${esc(t.title)}</div>
+              <button class="task-del" onclick="deleteTask('${t.id}')" title="Remove">×</button>
+            </div>`;
+        }
+      });
+
+      if (!allTasks.length) tasksHtml = '<div class="no-tasks">No tasks</div>';
+
+      const col = document.createElement('div');
+      col.className = `day-col${isToday(date) ? ' is-today' : ''}`;
+      col.innerHTML = `
+        <div class="day-head">
+          <div class="day-name">${day}</div>
+          <div class="day-num">${date.getDate()}</div>
+        </div>
+        <div class="day-body">
+          ${tasksHtml}
+          <button class="add-row" onclick="openTaskModal('${day}')">+ Add task</button>
+        </div>`;
+      grid.appendChild(col);
+    });
+  }
+
+  // ─── Render recurring view ────────────────────────────────────────────────────
+  function renderRecurring() {
+    const d    = db();
+    const list = document.getElementById('recList');
+    if (!d.recurring.length) {
+      list.innerHTML = `
+        <div class="empty-box">
+          <div class="icon">📋</div>
+          <h3>No recurring tasks yet</h3>
+          <p>Add tasks that repeat every week and they'll show up automatically.</p>
+          <button class="btn-primary" onclick="openRecModal()">Add your first recurring task</button>
+        </div>`;
+      return;
+    }
+    const sorted = [...d.recurring].sort((a,b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day));
+    list.innerHTML = sorted.map(t => `
+      <div class="rec-item">
+        <span class="rec-day-tag">${t.day}</span>
+        <span class="rec-item-title">${esc(t.title)}</span>
+        <button class="btn-icon" onclick="deleteRecurring('${t.id}')" title="Delete">×</button>
+      </div>`).join('');
+  }
+
+  // ─── Keyboard & overlay click ─────────────────────────────────────────────────
+  document.querySelectorAll('.overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  });
+  document.getElementById('taskInput').addEventListener('keydown', e => { if (e.key==='Enter') saveTask(); });
+  document.getElementById('recInput').addEventListener('keydown',  e => { if (e.key==='Enter') saveRecurring(); });
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────────
+  render();
+</script>
+</body>
+</html>
