@@ -5,23 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Weekly Planner</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f7; color: #1a1a2e; min-height: 100vh; }
 
-    /* Header */
-    .header { background: #fff; border-bottom: 1px solid #e4e6ed; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .logo { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    /* ── Header ── */
+    .header { background: #fff; border-bottom: 1px solid #e4e6ed; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); gap: 12px; }
+    .logo { font-size: 18px; font-weight: 700; color: #1a1a2e; flex-shrink: 0; }
     .logo span { color: #5046e5; }
-    .tabs { display: flex; gap: 2px; background: #f0f2f7; padding: 4px; border-radius: 8px; }
+    .tabs { display: flex; gap: 2px; background: #f0f2f7; padding: 4px; border-radius: 8px; flex-shrink: 0; }
     .tab { padding: 6px 18px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; background: transparent; color: #777; transition: all 0.15s; }
     .tab.active { background: #fff; color: #5046e5; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .hbtn { background: #f0f2f7; color: #555; border: none; border-radius: 8px; padding: 7px 13px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+    .hbtn:hover { background: #e0e2eb; }
+    .gcal-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; display: inline-block; margin-right: 4px; flex-shrink: 0; }
+    .gcal-dot.on { background: #22c55e; }
 
-    /* Layout */
-    .main { max-width: 1300px; margin: 0 auto; padding: 24px 24px 48px; }
+    /* ── Layout ── */
+    .main { max-width: 1400px; margin: 0 auto; padding: 20px 20px 48px; }
 
-    /* Week Nav */
-    .week-nav { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+    /* ── Week Nav ── */
+    .week-nav { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 12px; padding: 14px 20px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
     .nav-arrow { background: #f0f2f7; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; color: #444; }
     .nav-arrow:hover { background: #e0e2eb; }
     .week-info { text-align: center; }
@@ -30,28 +36,28 @@
     .nav-right { display: flex; gap: 8px; align-items: center; }
     .btn-today { background: #5046e5; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; }
     .btn-today:hover { background: #4338ca; }
-    .btn-export { background: #f0f2f7; color: #555; border: none; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
-    .btn-export:hover { background: #e0e2eb; color: #1a1a2e; }
+    .btn-sm { background: #f0f2f7; color: #555; border: none; border-radius: 8px; padding: 7px 13px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+    .btn-sm:hover { background: #e0e2eb; }
 
-    /* Progress */
+    /* ── Progress ── */
     .progress-bar-wrap { background: #fff; border-radius: 12px; padding: 14px 20px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 16px; }
     .progress-label { font-size: 13px; color: #777; white-space: nowrap; }
     .progress-track { flex: 1; height: 8px; background: #e4e6ed; border-radius: 4px; overflow: hidden; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, #5046e5, #7c3aed); border-radius: 4px; transition: width 0.35s ease; }
     .progress-count { font-size: 13px; font-weight: 600; color: #5046e5; white-space: nowrap; }
 
-    /* Filter Bar */
-    .filter-wrap { background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 8px; overflow-x: auto; }
+    /* ── Filter Bar ── */
+    .filter-wrap { background: #fff; border-radius: 12px; padding: 11px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 8px; overflow-x: auto; }
     .filter-wrap::-webkit-scrollbar { height: 0; }
-    .filter-lbl { font-size: 11px; color: #aaa; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; margin-right: 2px; }
-    .fpill { padding: 5px 14px; border-radius: 20px; border: 2px solid #e4e6ed; background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; white-space: nowrap; transition: all 0.12s; flex-shrink: 0; }
+    .filter-lbl { font-size: 11px; color: #aaa; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+    .fpill { padding: 5px 13px; border-radius: 20px; border: 2px solid #e4e6ed; background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; white-space: nowrap; transition: all 0.12s; flex-shrink: 0; }
     .fpill.all-pill { border-color: #5046e5; color: #5046e5; }
     .fpill.all-pill.on { background: #5046e5; color: #fff; }
     .fpill:hover { opacity: 0.8; }
     .add-client-pill { padding: 5px 12px; border-radius: 20px; border: 2px dashed #d1d5db; background: transparent; cursor: pointer; font-size: 12px; font-weight: 600; color: #9ca3af; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
     .add-client-pill:hover { border-color: #5046e5; color: #5046e5; }
 
-    /* Days Grid */
+    /* ── Days Grid ── */
     .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
     @media (max-width: 960px) { .days-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 560px) { .days-grid { grid-template-columns: 1fr; } }
@@ -61,16 +67,24 @@
     .day-col.is-today .day-head { background: #5046e5; }
     .day-col.is-today .day-name { color: rgba(255,255,255,0.75); }
     .day-col.is-today .day-num { color: #fff; }
+
+    /* Drop target highlight */
+    .day-col.drag-over .day-body { background: rgba(80,70,229,0.04); }
+    .day-col.drag-over { box-shadow: 0 0 0 2px #5046e5, 0 4px 14px rgba(80,70,229,0.15); }
+
     .day-head { background: #f7f8fb; border-bottom: 1px solid #e4e6ed; padding: 10px 12px; text-align: center; }
     .day-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; }
     .day-num { font-size: 22px; font-weight: 700; color: #1a1a2e; }
-    .day-body { padding: 8px; flex: 1; display: flex; flex-direction: column; }
+    .day-body { padding: 8px; flex: 1; display: flex; flex-direction: column; transition: background 0.15s; }
 
-    /* Task Items */
-    .task-item { display: flex; align-items: flex-start; gap: 7px; padding: 7px 8px 7px 10px; border-radius: 7px; cursor: pointer; position: relative; margin-bottom: 4px; border-left: 3px solid #e4e6ed; transition: filter 0.12s; }
-    .task-item:hover { filter: brightness(0.95); }
+    /* ── Task Items ── */
+    .task-item { display: flex; align-items: flex-start; gap: 7px; padding: 7px 8px 7px 10px; border-radius: 7px; cursor: grab; position: relative; margin-bottom: 4px; border-left: 3px solid #e4e6ed; transition: box-shadow 0.15s, opacity 0.15s; user-select: none; }
+    .task-item:active { cursor: grabbing; }
+    .task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .task-item.dragging { opacity: 0.3; cursor: grabbing; box-shadow: none; }
     .task-item.done { opacity: 0.5; }
     .task-item.done .task-text { text-decoration: line-through; color: #aaa; }
+
     .check-circle { width: 17px; height: 17px; border: 2px solid rgba(0,0,0,0.18); border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 10px; color: transparent; }
     .task-item.done .check-circle { background: #5046e5; border-color: #5046e5; color: #fff; }
     .task-body { flex: 1; min-width: 0; }
@@ -85,11 +99,14 @@
     .task-del { opacity: 0; background: none; border: none; cursor: pointer; color: #bbb; font-size: 15px; padding: 0; line-height: 1; transition: color 0.12s, opacity 0.12s; }
     .task-item:hover .task-del { opacity: 1; }
     .task-del:hover { color: #ef4444; }
+    .gcal-sync-dot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; align-self: center; flex-shrink: 0; margin-left: 1px; }
+
     .add-row { width: 100%; padding: 6px 4px; background: none; border: 1px dashed #dde0ea; border-radius: 7px; cursor: pointer; font-size: 11.5px; color: #bbb; transition: all 0.15s; margin-top: 4px; }
     .add-row:hover { border-color: #5046e5; color: #5046e5; background: #f5f3ff; }
     .no-tasks { font-size: 11px; color: #ccc; text-align: center; padding: 12px 0 4px; flex: 1; }
+    .drag-hint { font-size: 10px; color: #ddd; text-align: center; padding: 4px 0; }
 
-    /* Recurring View */
+    /* ── Recurring View ── */
     .recurring-view { display: none; }
     .recurring-view.active { display: block; }
     .week-view { display: none; }
@@ -113,18 +130,20 @@
     .empty-box h3 { font-size: 16px; margin-bottom: 8px; }
     .empty-box p { font-size: 13px; color: #999; margin-bottom: 20px; }
 
-    /* Modals */
+    /* ── Modals ── */
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; align-items: center; justify-content: center; }
     .overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; margin: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.18); animation: pop .18s ease; }
+    .modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 460px; margin: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.18); animation: pop .18s ease; max-height: 90vh; overflow-y: auto; }
     @keyframes pop { from { transform: scale(0.95) translateY(-8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
     .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 20px; }
     .field { margin-bottom: 16px; }
     .field label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-    .field input, .field select { width: 100%; padding: 10px 12px; border: 1.5px solid #e4e6ed; border-radius: 8px; font-size: 14px; color: #1a1a2e; background: #fff; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-    .field input:focus, .field select:focus { border-color: #5046e5; box-shadow: 0 0 0 3px rgba(80,70,229,0.12); }
+    .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #e4e6ed; border-radius: 8px; font-size: 14px; color: #1a1a2e; background: #fff; outline: none; transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit; }
+    .field textarea { resize: vertical; min-height: 70px; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #5046e5; box-shadow: 0 0 0 3px rgba(80,70,229,0.12); }
     .field-row { display: flex; gap: 12px; margin-bottom: 16px; }
     .field-row .field { flex: 1; margin-bottom: 0; }
+    .field-note { font-size: 11px; color: #999; margin-top: 5px; line-height: 1.5; }
     .color-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .cswatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; outline: 3px solid transparent; transition: all 0.12s; flex-shrink: 0; }
     .cswatch:hover { transform: scale(1.15); }
@@ -134,6 +153,27 @@
     .btn-cancel:hover { background: #e0e2eb; }
     .err-msg { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
     .err-msg.show { display: block; }
+    .info-box { background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #3730a3; line-height: 1.6; margin-bottom: 16px; }
+    .info-box strong { font-weight: 700; }
+    .info-box ol { padding-left: 16px; margin-top: 6px; }
+    .info-box li { margin-bottom: 3px; }
+    .copy-row { display: flex; gap: 8px; }
+    .copy-row input { flex: 1; font-size: 11px; background: #f7f8fb; color: #555; }
+    .copy-btn { background: #5046e5; color: #fff; border: none; border-radius: 8px; padding: 0 14px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; transition: background 0.15s; flex-shrink: 0; }
+    .copy-btn:hover { background: #4338ca; }
+    .copy-btn.copied { background: #22c55e; }
+    .divider { border: none; border-top: 1px solid #e4e6ed; margin: 20px 0; }
+    .settings-section { margin-bottom: 20px; }
+    .settings-section h3 { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
+    .gcal-status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; background: #f7f8fb; border: 1px solid #e4e6ed; margin-bottom: 12px; }
+    .gcal-status-text { flex: 1; font-size: 13px; color: #555; }
+    .gcal-status-text strong { font-weight: 600; }
+    .btn-danger { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+    .btn-danger:hover { background: #fee2e2; }
+    .btn-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+    .btn-success:hover { background: #dcfce7; }
+    .whatsapp-steps { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #166534; line-height: 1.7; }
+    .whatsapp-steps ol { padding-left: 16px; }
   </style>
 </head>
 <body>
@@ -142,12 +182,17 @@
   <div class="logo">Weekly<span>Plan</span></div>
   <div class="tabs">
     <button class="tab active" id="tabWeek">This Week</button>
-    <button class="tab" id="tabRec">Recurring Tasks</button>
+    <button class="tab" id="tabRec">Recurring</button>
+  </div>
+  <div class="header-right">
+    <button class="hbtn" id="gcalBtn"><span class="gcal-dot" id="gcalDot"></span>Google Cal</button>
+    <button class="hbtn" id="settingsBtn">&#9881; Settings</button>
   </div>
 </div>
 
 <div class="main">
 
+  <!-- Week View -->
   <div class="week-view active" id="weekView">
     <div class="week-nav">
       <button class="nav-arrow" id="prevWeek">&#8592;</button>
@@ -156,7 +201,7 @@
         <p id="weekRange"></p>
       </div>
       <div class="nav-right">
-        <button class="btn-export" id="exportBtn">&#x1F4C5; Export to Calendar</button>
+        <button class="btn-sm" id="exportBtn">&#x1F4C5; Export</button>
         <button class="btn-today" id="todayBtn">Today</button>
         <button class="nav-arrow" id="nextWeek">&#8594;</button>
       </div>
@@ -172,6 +217,7 @@
     <div class="days-grid" id="daysGrid"></div>
   </div>
 
+  <!-- Recurring View -->
   <div class="recurring-view" id="recurringView">
     <div class="section-header">
       <div>
@@ -273,17 +319,74 @@
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="modal-title">&#9881; Settings</div>
+
+    <!-- Google Calendar Section -->
+    <div class="settings-section">
+      <h3>&#x1F4C5; Google Calendar Sync</h3>
+      <div class="gcal-status" id="gcalStatusBox">
+        <div class="gcal-dot" id="gcalStatusDot"></div>
+        <div class="gcal-status-text" id="gcalStatusText">Not connected</div>
+        <button class="btn-success" id="gcalConnectBtn">Connect</button>
+      </div>
+      <div class="field">
+        <label>Google OAuth Client ID</label>
+        <input type="text" id="gcalClientIdInput" placeholder="xxxxxxxx.apps.googleusercontent.com" />
+        <div class="field-note">Need a Client ID? Follow these steps:<br>
+          1. Go to <strong>console.cloud.google.com</strong> → New Project<br>
+          2. APIs &amp; Services → Enable <strong>Google Calendar API</strong><br>
+          3. Credentials → Create → OAuth client ID → <strong>Web application</strong><br>
+          4. Add <strong>https://trumanjm.github.io</strong> to Authorized JavaScript origins<br>
+          5. Copy the Client ID and paste it above, then click Save
+        </div>
+      </div>
+      <button class="btn-primary" id="saveGcalClientIdBtn" style="font-size:13px;padding:8px 16px;">Save Client ID</button>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- WhatsApp / SMS Section -->
+    <div class="settings-section">
+      <h3>&#x1F4F1; Add Tasks by Link (WhatsApp / SMS Workaround)</h3>
+      <div class="whatsapp-steps">
+        <strong>How it works:</strong> Send yourself this link via WhatsApp, iMessage, or any app. Tap it on your phone to open the planner with the Add Task form already open.<br><br>
+        <ol>
+          <li>Copy the Quick-Add link below</li>
+          <li>Send it to yourself on WhatsApp or save as a phone bookmark</li>
+          <li>To pre-fill a task: add <code>?add=1&amp;title=Your+Task&amp;client=Lizzy+Reels&amp;day=Wed</code></li>
+          <li>For automated adds, use <strong>Zapier</strong> or <strong>iPhone Shortcuts</strong> to open that URL</li>
+        </ol>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Quick-Add Link</label>
+        <div class="copy-row">
+          <input type="text" id="quickAddUrl" readonly />
+          <button class="copy-btn" id="copyQuickAddBtn">Copy</button>
+        </div>
+        <div class="field-note">Tap this link to open the planner with the Add Task form instantly.</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="closeSettingsBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────────
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const FULL = { Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday' };
+const FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
 
 const DEFAULT_CLIENTS = [
-  { name:'Lizzy Reels',     color:'#db2777' },
-  { name:'Redeeming Love',  color:'#d97706' },
-  { name:'Rose Lifting',    color:'#059669' },
-  { name:'Jeff Burningham', color:'#2563eb' },
-  { name:'Growth',          color:'#7c3aed' },
+  {name:'Lizzy Reels',     color:'#db2777'},
+  {name:'Redeeming Love',  color:'#d97706'},
+  {name:'Rose Lifting',    color:'#059669'},
+  {name:'Jeff Burningham', color:'#2563eb'},
+  {name:'Growth',          color:'#7c3aed'},
 ];
 
 const SWATCHES = [
@@ -294,9 +397,11 @@ const SWATCHES = [
 
 // ── State ──────────────────────────────────────────────────────────────────────
 let weekOffset   = 0;
-let clientFilter = null;  // null = all, string = client name
+let clientFilter = null;
 let pickedColor  = SWATCHES[6];
-let _taskDay     = 'Mon'; // which day was clicked to open task modal
+let gcalToken    = null;    // current access_token
+let gcalExpiry   = 0;       // timestamp when token expires
+let gcalClient   = null;    // GIS tokenClient
 
 // ── Storage ────────────────────────────────────────────────────────────────────
 function load() { try { return JSON.parse(localStorage.getItem('wp2025')||'{}'); } catch { return {}; } }
@@ -306,26 +411,23 @@ function db() {
   d.recurring   = d.recurring   || [];
   d.tasks       = d.tasks       || {};
   d.completions = d.completions || {};
+  d.skips       = d.skips       || {};   // {[wk]: {[recTaskId]: true}}
+  d.gcalIds     = d.gcalIds     || {};   // {[taskId]: gcalEventId}
+  d.settings    = d.settings    || {};
 
   // Init / migrate clients
   if (!d.clients || !d.clients.length) {
-    d.clients = DEFAULT_CLIENTS.map(c => ({name:c.name, color:c.color}));
+    d.clients = DEFAULT_CLIENTS.map(c => ({name:c.name,color:c.color}));
     save(d);
   } else if (typeof d.clients[0] === 'string') {
-    // migrate from old string[] format
     d.clients = d.clients.map(name => {
-      const def = DEFAULT_CLIENTS.find(c => c.name===name);
-      return { name, color: def ? def.color : '#6366f1' };
+      const def = DEFAULT_CLIENTS.find(c=>c.name===name);
+      return {name, color: def?def.color:'#6366f1'};
     });
-    if (!d.clients.find(c => c.name==='Growth'))
-      d.clients.push({name:'Growth', color:'#7c3aed'});
+    if (!d.clients.find(c=>c.name==='Growth')) d.clients.push({name:'Growth',color:'#7c3aed'});
     save(d);
   } else {
-    // ensure Growth exists
-    if (!d.clients.find(c => c.name==='Growth')) {
-      d.clients.push({name:'Growth', color:'#7c3aed'});
-      save(d);
-    }
+    if (!d.clients.find(c=>c.name==='Growth')) { d.clients.push({name:'Growth',color:'#7c3aed'}); save(d); }
   }
   return d;
 }
@@ -347,128 +449,287 @@ function seedIfEmpty() {
     {day:'Thu',time:'18:00',title:'Post',               client:'Rose Lifting'},
     {day:'Fri',time:'18:00',title:'Post',               client:'Rose Lifting'},
     {day:'Wed',time:'',     title:'Deliver 2 new reels',client:'Jeff Burningham'},
-  ].forEach(t => d.recurring.push({id:uid(), ...t}));
+  ].forEach(t => d.recurring.push({id:uid(),...t}));
   save(d);
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
-
-function clientInfo(name) {
-  return db().clients.find(c => c.name===name) || null;
-}
-
-function hexToRgb(hex) {
-  return { r:parseInt(hex.slice(1,3),16), g:parseInt(hex.slice(3,5),16), b:parseInt(hex.slice(5,7),16) };
-}
-
-// Returns {bg, border} CSS strings for a task
+function clientInfo(name) { return db().clients.find(c=>c.name===name)||null; }
+function hexToRgb(hex) { return {r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)}; }
 function taskColors(clientName, isRec) {
   const info = clientName ? clientInfo(clientName) : null;
   if (info) {
     const {r,g,b} = hexToRgb(info.color);
-    return {
-      bg:     `rgba(${r},${g},${b},${isRec ? 0.11 : 0.05})`,
-      border: isRec ? info.color : `rgba(${r},${g},${b},0.35)`,
-    };
+    return {bg:`rgba(${r},${g},${b},${isRec?0.11:0.05})`, border:isRec?info.color:`rgba(${r},${g},${b},0.35)`};
   }
-  return { bg: isRec ? '#f5f0ff' : '#f9fafb', border: isRec ? '#8b5cf6' : '#d1d5db' };
+  return {bg:isRec?'#f5f0ff':'#f9fafb', border:isRec?'#8b5cf6':'#d1d5db'};
 }
-
 function fmtTime(t) {
   if (!t) return '';
   const [h,m] = t.split(':').map(Number);
   return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
 }
+function toMins(t) { if (!t) return Infinity; const [h,m]=t.split(':').map(Number); return h*60+m; }
+function esc(s) { const d=document.createElement('div'); d.appendChild(document.createTextNode(String(s))); return d.innerHTML; }
 
-function toMins(t) {
-  if (!t) return Infinity;
-  const [h,m] = t.split(':').map(Number);
-  return h*60+m;
-}
-
-function esc(s) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(String(s)));
-  return d.innerHTML;
-}
-
-// ── Week helpers ───────────────────────────────────────────────────────────────
-function getMon(date) {
-  const d = new Date(date), day = d.getDay();
-  d.setDate(d.getDate()-day+(day===0?-6:1));
-  d.setHours(0,0,0,0);
-  return d;
-}
+// Week helpers
+function getMon(date) { const d=new Date(date),day=d.getDay(); d.setDate(d.getDate()-day+(day===0?-6:1)); d.setHours(0,0,0,0); return d; }
 function isoWeek(date) {
-  const d = new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
-  const n = d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-n);
-  const y = d.getUTCFullYear();
-  const w = Math.ceil(((d-new Date(Date.UTC(y,0,1)))/86400000+1)/7);
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const n=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-n);
+  const y=d.getUTCFullYear(), w=Math.ceil(((d-new Date(Date.UTC(y,0,1)))/86400000+1)/7);
   return `${y}-W${String(w).padStart(2,'0')}`;
 }
 function weekDates(off) {
-  const now = new Date(); now.setDate(now.getDate()+off*7);
-  const mon = getMon(now);
-  return DAYS.map((_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+  const now=new Date(); now.setDate(now.getDate()+off*7);
+  const mon=getMon(now);
+  return DAYS.map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
 }
-function isToday(date) {
-  const t=new Date();
-  return date.getDate()===t.getDate()&&date.getMonth()===t.getMonth()&&date.getFullYear()===t.getFullYear();
-}
+function isToday(date) { const t=new Date(); return date.getDate()===t.getDate()&&date.getMonth()===t.getMonth()&&date.getFullYear()===t.getFullYear(); }
 function fmtDate(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 
-// ── Google Calendar ────────────────────────────────────────────────────────────
+// ── Google Calendar ───────────────────────────────────────────────────────────
 function localDT(date) {
-  const p = n => String(n).padStart(2,'0');
+  const p=n=>String(n).padStart(2,'0');
   return `${date.getFullYear()}${p(date.getMonth()+1)}${p(date.getDate())}T${p(date.getHours())}${p(date.getMinutes())}00`;
 }
 function localD(date) {
-  const p = n => String(n).padStart(2,'0');
+  const p=n=>String(n).padStart(2,'0');
   return `${date.getFullYear()}${p(date.getMonth()+1)}${p(date.getDate())}`;
 }
-
 function gcalUrl(task, date) {
-  const label = task.title + (task.client ? ` \u2014 ${task.client}` : '');
+  const label = task.title+(task.client?` \u2014 ${task.client}`:'');
   let dates;
   if (task.time) {
-    const [h,m] = task.time.split(':').map(Number);
-    const s = new Date(date); s.setHours(h,m,0,0);
-    const e = new Date(s);    e.setHours(h+1,m,0,0);
-    dates = `${localDT(s)}/${localDT(e)}`;
+    const [h,m]=task.time.split(':').map(Number);
+    const s=new Date(date); s.setHours(h,m,0,0);
+    const e=new Date(s); e.setHours(h+1,m,0,0);
+    dates=`${localDT(s)}/${localDT(e)}`;
   } else {
-    const next = new Date(date); next.setDate(next.getDate()+1);
-    dates = `${localD(date)}/${localD(next)}`;
+    const next=new Date(date); next.setDate(next.getDate()+1);
+    dates=`${localD(date)}/${localD(next)}`;
   }
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(label)}&dates=${dates}`;
 }
 
+function isGcalConnected() { return gcalToken && Date.now() < gcalExpiry; }
+
+function updateGcalUI() {
+  const on = isGcalConnected();
+  document.getElementById('gcalDot').className = 'gcal-dot' + (on?' on':'');
+  const statusDot = document.getElementById('gcalStatusDot');
+  const statusText = document.getElementById('gcalStatusText');
+  const connectBtn = document.getElementById('gcalConnectBtn');
+  if (statusDot) statusDot.className = 'gcal-dot' + (on?' on':'');
+  if (statusText) statusText.innerHTML = on
+    ? '<strong style="color:#16a34a">Connected</strong> \u2014 tasks sync to your calendar'
+    : 'Not connected';
+  if (connectBtn) {
+    connectBtn.textContent = on ? 'Disconnect' : 'Connect';
+    connectBtn.className = on ? 'btn-danger' : 'btn-success';
+  }
+}
+
+function initGcalClient() {
+  const clientId = db().settings.gcalClientId;
+  if (!clientId || !window.google) return;
+  gcalClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/calendar',
+    callback: (resp) => {
+      if (resp.error) { alert('Google Calendar auth failed: '+resp.error); return; }
+      gcalToken  = resp.access_token;
+      gcalExpiry = Date.now() + (resp.expires_in||3600)*1000;
+      updateGcalUI();
+      render();
+    },
+  });
+}
+
+function connectGcal() {
+  if (isGcalConnected()) {
+    gcalToken = null; gcalExpiry = 0;
+    updateGcalUI(); render(); return;
+  }
+  const clientId = db().settings.gcalClientId;
+  if (!clientId) {
+    openModal('settingsOverlay');
+    document.getElementById('gcalClientIdInput').focus();
+    return;
+  }
+  if (!gcalClient) initGcalClient();
+  if (gcalClient) gcalClient.requestAccessToken();
+  else alert('Google Identity Services not loaded yet — please wait a moment and try again.');
+}
+
+async function gcalApi(method, path, body) {
+  if (!isGcalConnected()) return null;
+  try {
+    const res = await fetch(`https://www.googleapis.com/calendar/v3${path}`, {
+      method,
+      headers: { 'Authorization':`Bearer ${gcalToken}`, 'Content-Type':'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      if (res.status===401) { gcalToken=null; gcalExpiry=0; updateGcalUI(); }
+      return null;
+    }
+    return method==='DELETE' ? {} : res.json();
+  } catch { return null; }
+}
+
+function buildCalEvent(task, date) {
+  const title = task.title + (task.client ? ` \u2014 ${task.client}` : '');
+  if (task.time) {
+    const [h,m] = task.time.split(':').map(Number);
+    const s = new Date(date); s.setHours(h,m,0,0);
+    const e = new Date(s);    e.setHours(h+1,m,0,0);
+    return {
+      summary: title,
+      start: {dateTime: s.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone},
+      end:   {dateTime: e.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone},
+    };
+  } else {
+    const next = new Date(date); next.setDate(next.getDate()+1);
+    return {
+      summary: title,
+      start: {date: localD(date)},
+      end:   {date: localD(next)},
+    };
+  }
+}
+
+// Find the Date object for a task's day in the currently viewed week
+function taskDate(task) {
+  const dates = weekDates(weekOffset);
+  const idx   = DAYS.indexOf(task.day);
+  return idx >= 0 ? dates[idx] : dates[0];
+}
+
+async function gcalSync(task, date) {
+  if (!isGcalConnected()) return;
+  const d = db();
+  const existing = d.gcalIds[task.id];
+  const event = buildCalEvent(task, date);
+  let eventId = existing;
+  if (existing) {
+    await gcalApi('PATCH', `/calendars/primary/events/${existing}`, event);
+  } else {
+    const created = await gcalApi('POST', '/calendars/primary/events', event);
+    if (created?.id) { eventId = created.id; d.gcalIds[task.id] = created.id; save(d); }
+  }
+  render();
+}
+
+async function gcalRemove(taskId) {
+  if (!isGcalConnected()) return;
+  const d = db();
+  const eventId = d.gcalIds[taskId];
+  if (eventId) {
+    await gcalApi('DELETE', `/calendars/primary/events/${eventId}`);
+    delete d.gcalIds[taskId]; save(d);
+  }
+}
+
+// Export .ics
 function exportICS() {
-  const d = db(), dates = weekDates(weekOffset), wk = isoWeek(dates[0]);
-  const manual = d.tasks[wk] || [];
-  let events = '';
-  dates.forEach((date, i) => {
-    const day = DAYS[i];
-    [...d.recurring.filter(t=>t.day===day), ...manual.filter(t=>t.day===day)].forEach(t => {
-      const title = t.title + (t.client ? ` \u2014 ${t.client}` : '');
-      let ds, de;
+  const d=db(), dates=weekDates(weekOffset), wk=isoWeek(dates[0]);
+  const manual=d.tasks[wk]||[], skips=d.skips[wk]||{};
+  let events='';
+  dates.forEach((date,i)=>{
+    const day=DAYS[i];
+    const all=[
+      ...d.recurring.filter(t=>t.day===day&&!skips[t.id]),
+      ...manual.filter(t=>t.day===day),
+    ];
+    all.forEach(t=>{
+      const title=t.title+(t.client?` \u2014 ${t.client}`:'');
+      let ds,de;
       if (t.time) {
-        const [h,m] = t.time.split(':').map(Number);
-        const s = new Date(date); s.setHours(h,m,0,0);
-        const e = new Date(s);    e.setHours(h+1,m,0,0);
-        ds = `DTSTART:${localDT(s)}`; de = `DTEND:${localDT(e)}`;
+        const [h,m]=t.time.split(':').map(Number);
+        const s=new Date(date); s.setHours(h,m,0,0);
+        const e=new Date(s); e.setHours(h+1,m,0,0);
+        ds=`DTSTART:${localDT(s)}`; de=`DTEND:${localDT(e)}`;
       } else {
-        const next = new Date(date); next.setDate(next.getDate()+1);
-        ds = `DTSTART;VALUE=DATE:${localD(date)}`; de = `DTEND;VALUE=DATE:${localD(next)}`;
+        const next=new Date(date); next.setDate(next.getDate()+1);
+        ds=`DTSTART;VALUE=DATE:${localD(date)}`; de=`DTEND;VALUE=DATE:${localD(next)}`;
       }
-      events += `BEGIN:VEVENT\r\n${ds}\r\n${de}\r\nSUMMARY:${title}\r\nEND:VEVENT\r\n`;
+      events+=`BEGIN:VEVENT\r\n${ds}\r\n${de}\r\nSUMMARY:${title}\r\nEND:VEVENT\r\n`;
     });
   });
-  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//WeeklyPlan//EN\r\n${events}END:VCALENDAR`;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));
-  a.download = `weekly-plan-${wk}.ics`;
-  a.click();
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//WeeklyPlan//EN\r\n${events}END:VCALENDAR`;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));
+  a.download=`weekly-plan-${isoWeek(dates[0])}.ics`; a.click();
+}
+
+// ── URL Quick-Add ──────────────────────────────────────────────────────────────
+function handleUrlParams() {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.has('add')) return;
+  const title  = p.get('title')  || '';
+  const day    = DAYS.includes(p.get('day')) ? p.get('day') : null;
+  const time   = p.get('time')   || '';
+  const client = p.get('client') || '';
+  // Remove params from URL without reload
+  window.history.replaceState({}, '', window.location.pathname);
+  if (title && day) {
+    // Auto-add silently
+    const d=db(), wk=isoWeek(weekDates(0)[0]);
+    d.tasks[wk]=d.tasks[wk]||[];
+    const task={id:uid(),title,day,time,client};
+    d.tasks[wk].push(task); save(d);
+    if (isGcalConnected()) gcalSync(task, taskDate(task));
+  } else {
+    // Open modal pre-filled
+    populateClientSelects();
+    document.getElementById('taskInput').value  = title;
+    document.getElementById('taskDay').value    = day || 'Mon';
+    document.getElementById('taskTime').value   = time;
+    document.getElementById('taskClient').value = client;
+    openModal('taskOverlay');
+    setTimeout(()=>document.getElementById('taskInput').focus(), 80);
+  }
+}
+
+// ── Drag & Drop ────────────────────────────────────────────────────────────────
+let dragState = null; // {taskId, isRec, fromDay}
+
+function moveTask(taskId, isRec, fromDay, toDay) {
+  if (fromDay === toDay) return;
+  const d  = db();
+  const wk = isoWeek(weekDates(weekOffset)[0]);
+
+  if (isRec) {
+    // Don't change recurring schedule — skip it this week and create a one-off copy
+    d.skips[wk] = d.skips[wk] || {};
+    d.skips[wk][taskId] = true;
+    const src = d.recurring.find(t=>t.id===taskId);
+    if (src) {
+      const copy = {id:uid(), title:src.title, day:toDay, time:src.time, client:src.client};
+      d.tasks[wk] = d.tasks[wk] || [];
+      d.tasks[wk].push(copy);
+      if (isGcalConnected()) {
+        const dates = weekDates(weekOffset);
+        gcalSync(copy, dates[DAYS.indexOf(toDay)]);
+      }
+    }
+  } else {
+    // Move one-off task to new day
+    const tasks = d.tasks[wk] || [];
+    const task  = tasks.find(t=>t.id===taskId);
+    if (task) {
+      const oldDay = task.day;
+      task.day = toDay;
+      if (isGcalConnected()) {
+        const dates = weekDates(weekOffset);
+        gcalSync(task, dates[DAYS.indexOf(toDay)]);
+      }
+    }
+  }
+  save(d);
+  render();
 }
 
 // ── Modals ─────────────────────────────────────────────────────────────────────
@@ -478,21 +739,20 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function populateClientSelects() {
   const clients = db().clients;
   const opts = '<option value="">— No client —</option>' +
-    clients.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+    clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
   document.getElementById('taskClient').innerHTML = opts;
   document.getElementById('recClient').innerHTML  = opts;
 }
 
 function openTaskModal(day) {
-  _taskDay = day;
   populateClientSelects();
   document.getElementById('taskModalTitle').textContent = `Add Task \u2014 ${FULL[day]}`;
   document.getElementById('taskDay').value    = day;
   document.getElementById('taskInput').value  = '';
   document.getElementById('taskTime').value   = '';
-  document.getElementById('taskClient').value = clientFilter || '';
+  document.getElementById('taskClient').value = clientFilter||'';
   openModal('taskOverlay');
-  setTimeout(() => document.getElementById('taskInput').focus(), 80);
+  setTimeout(()=>document.getElementById('taskInput').focus(), 80);
 }
 
 function saveTask() {
@@ -501,11 +761,12 @@ function saveTask() {
   const time   = document.getElementById('taskTime').value;
   const client = document.getElementById('taskClient').value;
   if (!title) return;
-  const d = db(), wk = isoWeek(weekDates(weekOffset)[0]);
-  d.tasks[wk] = d.tasks[wk] || [];
-  d.tasks[wk].push({id:uid(), title, day, time, client});
-  save(d);
+  const d=db(), wk=isoWeek(weekDates(weekOffset)[0]);
+  d.tasks[wk]=d.tasks[wk]||[];
+  const task={id:uid(),title,day,time,client};
+  d.tasks[wk].push(task); save(d);
   closeModal('taskOverlay');
+  if (isGcalConnected()) gcalSync(task, taskDate(task));
   render();
 }
 
@@ -515,7 +776,7 @@ function openRecModal() {
   document.getElementById('recTime').value   = '';
   document.getElementById('recClient').value = '';
   openModal('recOverlay');
-  setTimeout(() => document.getElementById('recInput').focus(), 80);
+  setTimeout(()=>document.getElementById('recInput').focus(), 80);
 }
 
 function saveRecurring() {
@@ -524,173 +785,170 @@ function saveRecurring() {
   const time   = document.getElementById('recTime').value;
   const client = document.getElementById('recClient').value;
   if (!title) return;
-  const d = db();
-  d.recurring.push({id:uid(), title, day, time, client});
-  save(d);
+  const d=db();
+  const task={id:uid(),title,day,time,client};
+  d.recurring.push(task); save(d);
   closeModal('recOverlay');
-  renderRecurring();
-  render();
+  renderRecurring(); render();
 }
 
 function deleteRecurring(id) {
-  const d = db();
-  d.recurring = d.recurring.filter(t => t.id!==id);
+  const d=db();
+  d.recurring=d.recurring.filter(t=>t.id!==id);
   save(d); renderRecurring(); render();
 }
 
 function toggleDone(taskId) {
-  const d = db(), wk = isoWeek(weekDates(weekOffset)[0]);
-  d.completions[wk] = d.completions[wk] || {};
+  const d=db(), wk=isoWeek(weekDates(weekOffset)[0]);
+  d.completions[wk]=d.completions[wk]||{};
   if (d.completions[wk][taskId]) delete d.completions[wk][taskId];
-  else d.completions[wk][taskId] = true;
+  else d.completions[wk][taskId]=true;
   save(d); render();
 }
 
 function deleteTask(id) {
-  const d = db(), wk = isoWeek(weekDates(weekOffset)[0]);
-  d.tasks[wk] = (d.tasks[wk]||[]).filter(t => t.id!==id);
+  const d=db(), wk=isoWeek(weekDates(weekOffset)[0]);
+  d.tasks[wk]=(d.tasks[wk]||[]).filter(t=>t.id!==id);
   if (d.completions[wk]) delete d.completions[wk][id];
-  save(d); render();
+  save(d);
+  gcalRemove(id);
+  render();
 }
 
 // ── Add Client ─────────────────────────────────────────────────────────────────
 function openClientModal() {
-  document.getElementById('clientName').value = '';
+  document.getElementById('clientName').value='';
   document.getElementById('clientErr').classList.remove('show');
-  pickedColor = SWATCHES[6];
+  pickedColor=SWATCHES[6];
   renderSwatches();
   openModal('clientOverlay');
-  setTimeout(() => document.getElementById('clientName').focus(), 80);
+  setTimeout(()=>document.getElementById('clientName').focus(), 80);
 }
 
 function renderSwatches() {
-  const grid = document.getElementById('colorGrid');
-  grid.innerHTML = SWATCHES.map(c =>
-    `<div class="cswatch${c===pickedColor?' picked':''}" style="background:${c}" data-c="${c}"></div>`
-  ).join('');
-  grid.querySelectorAll('.cswatch').forEach(el => {
-    el.addEventListener('click', () => { pickedColor = el.dataset.c; renderSwatches(); });
+  const grid=document.getElementById('colorGrid');
+  grid.innerHTML=SWATCHES.map(c=>`<div class="cswatch${c===pickedColor?' picked':''}" style="background:${c}" data-c="${c}"></div>`).join('');
+  grid.querySelectorAll('.cswatch').forEach(el=>{
+    el.addEventListener('click',()=>{pickedColor=el.dataset.c; renderSwatches();});
   });
 }
 
 function saveClient() {
-  const name = document.getElementById('clientName').value.trim();
-  const errEl = document.getElementById('clientErr');
+  const name=document.getElementById('clientName').value.trim();
   if (!name) return;
-  const d = db();
-  if (d.clients.find(c => c.name===name)) {
-    errEl.classList.add('show'); return;
-  }
-  errEl.classList.remove('show');
-  d.clients.push({name, color: pickedColor});
-  save(d);
+  const d=db();
+  if (d.clients.find(c=>c.name===name)) { document.getElementById('clientErr').classList.add('show'); return; }
+  document.getElementById('clientErr').classList.remove('show');
+  d.clients.push({name, color:pickedColor}); save(d);
   closeModal('clientOverlay');
   render();
 }
 
+// ── Settings ───────────────────────────────────────────────────────────────────
+function openSettings() {
+  const d=db();
+  document.getElementById('gcalClientIdInput').value = d.settings.gcalClientId||'';
+  const base = window.location.origin+window.location.pathname;
+  document.getElementById('quickAddUrl').value = base+'?add=1';
+  updateGcalUI();
+  openModal('settingsOverlay');
+}
+
+function saveGcalClientId() {
+  const id=document.getElementById('gcalClientIdInput').value.trim();
+  const d=db(); d.settings.gcalClientId=id; save(d);
+  gcalClient=null; // reinit on next connect
+  if (id) initGcalClient();
+  document.getElementById('saveGcalClientIdBtn').textContent='Saved!';
+  setTimeout(()=>document.getElementById('saveGcalClientIdBtn').textContent='Save Client ID', 1500);
+}
+
 // ── Filter bar ─────────────────────────────────────────────────────────────────
 function renderFilterBar() {
-  const bar = document.getElementById('filterBar');
-  const clients = db().clients;
-
-  // Build pills — using data-filter attribute instead of onclick to avoid escaping issues
-  let html = `<span class="filter-lbl">Client</span>`;
-  html += `<button class="fpill all-pill${clientFilter===null?' on':''}" data-filter="">All</button>`;
-  clients.forEach(c => {
-    const on = clientFilter === c.name;
-    const style = on
-      ? `background:${c.color};border-color:${c.color};color:#fff;`
-      : `border-color:${c.color};color:${c.color};`;
-    html += `<button class="fpill" style="${style}" data-filter="${esc(c.name)}">${esc(c.name)}</button>`;
+  const bar=document.getElementById('filterBar');
+  const clients=db().clients;
+  let html=`<span class="filter-lbl">Client</span>`;
+  html+=`<button class="fpill all-pill${clientFilter===null?' on':''}" data-filter="">All</button>`;
+  clients.forEach(c=>{
+    const on=clientFilter===c.name;
+    const style=on?`background:${c.color};border-color:${c.color};color:#fff;`:`border-color:${c.color};color:${c.color};`;
+    html+=`<button class="fpill" style="${style}" data-filter="${esc(c.name)}">${esc(c.name)}</button>`;
   });
-  html += `<button class="add-client-pill" id="addClientPill">+ Add Client</button>`;
-  bar.innerHTML = html;
-
-  // Attach listeners — no inline onclick, no escaping issues
-  bar.querySelectorAll('[data-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      clientFilter = btn.dataset.filter === '' ? null : btn.dataset.filter;
-      render();
-    });
+  html+=`<button class="add-client-pill" id="addClientPill">+ Add Client</button>`;
+  bar.innerHTML=html;
+  bar.querySelectorAll('[data-filter]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ clientFilter=btn.dataset.filter===''?null:btn.dataset.filter; render(); });
   });
   document.getElementById('addClientPill').addEventListener('click', openClientModal);
 }
 
 // ── Render week ────────────────────────────────────────────────────────────────
 function render() {
-  const d = db(), dates = weekDates(weekOffset), wk = isoWeek(dates[0]);
-  const comp = d.completions[wk] || {}, manual = d.tasks[wk] || [];
+  const d=db(), dates=weekDates(weekOffset), wk=isoWeek(dates[0]);
+  const comp=d.completions[wk]||{}, manual=d.tasks[wk]||[], skips=d.skips[wk]||{};
 
-  const off = weekOffset;
-  document.getElementById('weekTitle').textContent =
-    off===0 ? 'Current Week' :
-    off <0  ? `${Math.abs(off)} week${Math.abs(off)>1?'s':''} ago` :
-              `${off} week${off>1?'s':''} ahead`;
-  document.getElementById('weekRange').textContent = `${fmtDate(dates[0])} \u2013 ${fmtDate(dates[6])}`;
+  const off=weekOffset;
+  document.getElementById('weekTitle').textContent=
+    off===0?'Current Week':off<0?`${Math.abs(off)} week${Math.abs(off)>1?'s':''} ago`:`${off} week${off>1?'s':''} ahead`;
+  document.getElementById('weekRange').textContent=`${fmtDate(dates[0])} \u2013 ${fmtDate(dates[6])}`;
 
-  // Progress (always counts all tasks, unaffected by filter)
-  let tot=0, dn=0;
-  DAYS.forEach(day => {
-    const all = [...d.recurring.filter(t=>t.day===day), ...manual.filter(t=>t.day===day)];
-    tot += all.length;
-    all.forEach(t => { if (comp[t.id]) dn++; });
+  let tot=0,dn=0;
+  DAYS.forEach(day=>{
+    const all=[...d.recurring.filter(t=>t.day===day&&!skips[t.id]),...manual.filter(t=>t.day===day)];
+    tot+=all.length; all.forEach(t=>{if(comp[t.id])dn++;});
   });
-  document.getElementById('progCount').textContent = `${dn} / ${tot} tasks`;
-  document.getElementById('progFill').style.width  = tot ? `${(dn/tot)*100}%` : '0%';
+  document.getElementById('progCount').textContent=`${dn} / ${tot} tasks`;
+  document.getElementById('progFill').style.width=tot?`${(dn/tot)*100}%`:'0%';
 
   renderFilterBar();
+  updateGcalUI();
 
-  const grid = document.getElementById('daysGrid');
-  grid.innerHTML = '';
+  const grid=document.getElementById('daysGrid');
+  grid.innerHTML='';
 
-  dates.forEach((date, i) => {
-    const day = DAYS[i];
-    let rec = d.recurring.filter(t=>t.day===day);
-    let man = manual.filter(t=>t.day===day);
-    if (clientFilter) {
-      rec = rec.filter(t=>t.client===clientFilter);
-      man = man.filter(t=>t.client===clientFilter);
-    }
-    const tasks = [
-      ...rec.map(t=>({...t,isRec:true})),
-      ...man.map(t=>({...t,isRec:false})),
-    ].sort((a,b) => toMins(a.time)-toMins(b.time));
+  dates.forEach((date,i)=>{
+    const day=DAYS[i];
+    let rec=d.recurring.filter(t=>t.day===day&&!skips[t.id]);
+    let man=manual.filter(t=>t.day===day);
+    if (clientFilter) { rec=rec.filter(t=>t.client===clientFilter); man=man.filter(t=>t.client===clientFilter); }
+    const tasks=[...rec.map(t=>({...t,isRec:true})),...man.map(t=>({...t,isRec:false}))]
+      .sort((a,b)=>toMins(a.time)-toMins(b.time));
 
-    const col = document.createElement('div');
-    col.className = `day-col${isToday(date)?' is-today':''}`;
+    const col=document.createElement('div');
+    col.className=`day-col${isToday(date)?' is-today':''}`;
 
-    let body = '';
-    tasks.forEach(t => {
-      const isDone = !!comp[t.id];
-      const colors = taskColors(t.client, t.isRec);
-      const info   = t.client ? clientInfo(t.client) : null;
+    let body='';
+    tasks.forEach(t=>{
+      const isDone=!!comp[t.id];
+      const colors=taskColors(t.client,t.isRec);
+      const info=t.client?clientInfo(t.client):null;
+      const timeBadge=t.time?`<span class="task-time">${fmtTime(t.time)}</span>`:'';
+      const clientChip=info?`<span class="client-chip" style="background:${info.color}1a;color:${info.color}">${esc(t.client)}</span>`:'';
+      const recDot=t.isRec?`<span class="rec-dot" title="Recurring \u2014 drag to reschedule for this week">&#8635;</span>`:'';
+      const delBtn=t.isRec?'': `<button class="task-del" data-del="${t.id}" title="Remove">\u00d7</button>`;
+      const gcalDot=isGcalConnected()&&d.gcalIds[t.id]?`<span class="gcal-sync-dot" title="Synced to Google Calendar"></span>`:'';
 
-      const timeBadge = t.time
-        ? `<span class="task-time">${fmtTime(t.time)}</span>` : '';
-      const clientChip = info
-        ? `<span class="client-chip" style="background:${info.color}1a;color:${info.color}">${esc(t.client)}</span>` : '';
-      const recDot = t.isRec ? `<span class="rec-dot">↻</span>` : '';
-      const delBtn = t.isRec ? '' : `<button class="task-del" data-del="${t.id}" title="Remove">×</button>`;
-
-      body += `
+      body+=`
         <div class="task-item${isDone?' done':''}"
              style="background:${colors.bg};border-left-color:${colors.border};"
-             data-toggle="${t.id}">
-          <div class="check-circle">${isDone?'✓':''}</div>
+             draggable="true"
+             data-toggle="${t.id}" data-taskid="${t.id}" data-isrec="${t.isRec?1:0}" data-day="${day}">
+          <div class="check-circle">${isDone?'\u2713':''}</div>
           <div class="task-body">
             <div class="task-text">${esc(t.title)}</div>
             <div class="task-meta">${timeBadge}${clientChip}</div>
           </div>
           <div class="task-side">
-            <a class="task-cal-btn" href="${gcalUrl(t,date)}" target="_blank" data-stop title="Add to Google Calendar">📅</a>
-            ${recDot}${delBtn}
+            <a class="task-cal-btn" href="${gcalUrl(t,date)}" target="_blank" data-stop title="Add to Google Calendar">&#x1F4C5;</a>
+            ${gcalDot}${recDot}${delBtn}
           </div>
         </div>`;
     });
 
-    if (!tasks.length) body = '<div class="no-tasks">No tasks</div>';
+    if (!tasks.length) body='<div class="no-tasks">No tasks</div>';
+    body+='<div class="drag-hint">drag tasks here</div>';
 
-    col.innerHTML = `
+    col.innerHTML=`
       <div class="day-head">
         <div class="day-name">${day}</div>
         <div class="day-num">${date.getDate()}</div>
@@ -700,98 +958,150 @@ function render() {
         <button class="add-row" data-add="${day}">+ Add task</button>
       </div>`;
 
-    // Attach all listeners via delegation — zero onclick-in-HTML issues
-    col.querySelectorAll('[data-toggle]').forEach(el => {
-      el.addEventListener('click', () => toggleDone(el.dataset.toggle));
+    // ── Attach event listeners (no inline onclick, no escaping issues) ──
+    col.querySelectorAll('[data-toggle]').forEach(el=>{
+      // Toggle on the body/check only, not on buttons inside
+      el.addEventListener('click', e=>{
+        if (e.target.closest('[data-del]')||e.target.closest('[data-stop]')) return;
+        toggleDone(el.dataset.toggle);
+      });
     });
-    col.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', e => { e.stopPropagation(); deleteTask(btn.dataset.del); });
+    col.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', e=>{ e.stopPropagation(); deleteTask(btn.dataset.del); });
     });
-    col.querySelectorAll('[data-stop]').forEach(el => {
-      el.addEventListener('click', e => e.stopPropagation());
+    col.querySelectorAll('[data-stop]').forEach(el=>{
+      el.addEventListener('click', e=>e.stopPropagation());
     });
-    col.querySelector('[data-add]').addEventListener('click', () => openTaskModal(day));
+    col.querySelector('[data-add]').addEventListener('click', ()=>openTaskModal(day));
+
+    // ── Drag source listeners ──
+    col.querySelectorAll('[data-taskid]').forEach(el=>{
+      el.addEventListener('dragstart', e=>{
+        dragState={taskId:el.dataset.taskid, isRec:el.dataset.isrec==='1', fromDay:el.dataset.day};
+        e.dataTransfer.effectAllowed='move';
+        // Use text/plain fallback for Firefox
+        e.dataTransfer.setData('text/plain', el.dataset.taskid);
+        setTimeout(()=>el.classList.add('dragging'), 0);
+      });
+      el.addEventListener('dragend', ()=>{
+        el.classList.remove('dragging');
+        document.querySelectorAll('.day-col.drag-over').forEach(c=>c.classList.remove('drag-over'));
+      });
+    });
+
+    // ── Drop target listeners on the column ──
+    col.addEventListener('dragover', e=>{
+      if (!dragState) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', e=>{
+      // Only remove if leaving the column entirely
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', e=>{
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if (!dragState) return;
+      moveTask(dragState.taskId, dragState.isRec, dragState.fromDay, day);
+      dragState=null;
+    });
 
     grid.appendChild(col);
   });
 }
 
-// ── Render recurring ───────────────────────────────────────────────────────────
+// ── Render recurring list ──────────────────────────────────────────────────────
 function renderRecurring() {
-  const d = db(), list = document.getElementById('recList');
+  const d=db(), list=document.getElementById('recList');
   if (!d.recurring.length) {
-    list.innerHTML = `
-      <div class="empty-box">
-        <div class="icon">📋</div>
-        <h3>No recurring tasks yet</h3>
-        <p>Add tasks that repeat every week and they'll show up automatically.</p>
-        <button class="btn-primary" id="firstRecBtn">Add your first recurring task</button>
-      </div>`;
+    list.innerHTML=`<div class="empty-box"><div class="icon">&#x1F4CB;</div><h3>No recurring tasks yet</h3><p>Add tasks that repeat every week.</p><button class="btn-primary" id="firstRecBtn">Add your first recurring task</button></div>`;
     document.getElementById('firstRecBtn').addEventListener('click', openRecModal);
     return;
   }
-  const sorted = [...d.recurring].sort((a,b) => {
-    const dd = DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
-    return dd!==0 ? dd : toMins(a.time)-toMins(b.time);
+  const sorted=[...d.recurring].sort((a,b)=>{
+    const dd=DAYS.indexOf(a.day)-DAYS.indexOf(b.day);
+    return dd!==0?dd:toMins(a.time)-toMins(b.time);
   });
-  list.innerHTML = sorted.map(t => {
-    const info = t.client ? clientInfo(t.client) : null;
-    const borderColor = info ? info.color : '#e4e6ed';
-    const clientBadge = info
-      ? `<span class="rec-client" style="background:${info.color}1a;color:${info.color}">${esc(t.client)}</span>` : '';
-    const timeBadge = t.time ? `<span class="rec-time">${fmtTime(t.time)}</span>` : '';
-    return `
-      <div class="rec-item" style="border-left-color:${borderColor}">
-        <span class="rec-day">${t.day}</span>
-        ${timeBadge}
-        <span class="rec-title">${esc(t.title)}</span>
-        ${clientBadge}
-        <button class="btn-icon" data-delrec="${t.id}" title="Delete">×</button>
-      </div>`;
+  list.innerHTML=sorted.map(t=>{
+    const info=t.client?clientInfo(t.client):null;
+    const borderColor=info?info.color:'#e4e6ed';
+    const clientBadge=info?`<span class="rec-client" style="background:${info.color}1a;color:${info.color}">${esc(t.client)}</span>`:'';
+    const timeBadge=t.time?`<span class="rec-time">${fmtTime(t.time)}</span>`:'';
+    return `<div class="rec-item" style="border-left-color:${borderColor}">
+      <span class="rec-day">${t.day}</span>${timeBadge}
+      <span class="rec-title">${esc(t.title)}</span>${clientBadge}
+      <button class="btn-icon" data-delrec="${t.id}" title="Delete">\u00d7</button>
+    </div>`;
   }).join('');
-
-  list.querySelectorAll('[data-delrec]').forEach(btn => {
-    btn.addEventListener('click', () => deleteRecurring(btn.dataset.delrec));
+  list.querySelectorAll('[data-delrec]').forEach(btn=>{
+    btn.addEventListener('click', ()=>deleteRecurring(btn.dataset.delrec));
   });
 }
 
-// ── Static listeners ────────────────────────────────────────────────────────────
-document.getElementById('tabWeek').addEventListener('click', () => {
+// ── Static listeners ───────────────────────────────────────────────────────────
+document.getElementById('tabWeek').addEventListener('click', ()=>{
   document.getElementById('tabWeek').classList.add('active');
   document.getElementById('tabRec').classList.remove('active');
   document.getElementById('weekView').classList.add('active');
   document.getElementById('recurringView').classList.remove('active');
 });
-document.getElementById('tabRec').addEventListener('click', () => {
+document.getElementById('tabRec').addEventListener('click', ()=>{
   document.getElementById('tabRec').classList.add('active');
   document.getElementById('tabWeek').classList.remove('active');
   document.getElementById('recurringView').classList.add('active');
   document.getElementById('weekView').classList.remove('active');
   renderRecurring();
 });
-document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; render(); });
-document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; render(); });
-document.getElementById('todayBtn').addEventListener('click', () => { weekOffset=0; render(); });
+document.getElementById('prevWeek').addEventListener('click', ()=>{weekOffset--;render();});
+document.getElementById('nextWeek').addEventListener('click', ()=>{weekOffset++;render();});
+document.getElementById('todayBtn').addEventListener('click', ()=>{weekOffset=0;render();});
 document.getElementById('exportBtn').addEventListener('click', exportICS);
 document.getElementById('addRecBtn').addEventListener('click', openRecModal);
-document.getElementById('cancelTask').addEventListener('click', () => closeModal('taskOverlay'));
-document.getElementById('cancelRec').addEventListener('click',  () => closeModal('recOverlay'));
-document.getElementById('cancelClient').addEventListener('click', () => closeModal('clientOverlay'));
+document.getElementById('gcalBtn').addEventListener('click', connectGcal);
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('cancelTask').addEventListener('click', ()=>closeModal('taskOverlay'));
+document.getElementById('cancelRec').addEventListener('click',  ()=>closeModal('recOverlay'));
+document.getElementById('cancelClient').addEventListener('click', ()=>closeModal('clientOverlay'));
+document.getElementById('closeSettingsBtn').addEventListener('click', ()=>closeModal('settingsOverlay'));
 document.getElementById('saveTaskBtn').addEventListener('click', saveTask);
 document.getElementById('saveRecBtn').addEventListener('click',  saveRecurring);
 document.getElementById('saveClientBtn').addEventListener('click', saveClient);
-document.getElementById('taskInput').addEventListener('keydown', e => { if (e.key==='Enter') saveTask(); });
-document.getElementById('recInput').addEventListener('keydown',  e => { if (e.key==='Enter') saveRecurring(); });
-document.getElementById('clientName').addEventListener('keydown', e => {
-  document.getElementById('clientErr').classList.remove('show');
-  if (e.key==='Enter') saveClient();
+document.getElementById('saveGcalClientIdBtn').addEventListener('click', saveGcalClientId);
+document.getElementById('gcalConnectBtn').addEventListener('click', ()=>{
+  if (isGcalConnected()) { gcalToken=null; gcalExpiry=0; updateGcalUI(); render(); }
+  else connectGcal();
 });
-document.querySelectorAll('.overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target===el) el.classList.remove('open'); });
+document.getElementById('copyQuickAddBtn').addEventListener('click', ()=>{
+  const inp=document.getElementById('quickAddUrl');
+  navigator.clipboard.writeText(inp.value).then(()=>{
+    const btn=document.getElementById('copyQuickAddBtn');
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+});
+document.getElementById('taskInput').addEventListener('keydown', e=>{if(e.key==='Enter')saveTask();});
+document.getElementById('recInput').addEventListener('keydown',  e=>{if(e.key==='Enter')saveRecurring();});
+document.getElementById('clientName').addEventListener('keydown', e=>{
+  document.getElementById('clientErr').classList.remove('show');
+  if(e.key==='Enter')saveClient();
+});
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click', e=>{if(e.target===el)el.classList.remove('open');});
 });
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 seedIfEmpty();
+// Init gcal client if credentials already saved
+window.addEventListener('load', ()=>{
+  if (window.google) initGcalClient();
+  else {
+    const gsiScript = document.querySelector('script[src*="gsi"]');
+    if (gsiScript) gsiScript.addEventListener('load', initGcalClient);
+  }
+});
+handleUrlParams();
 render();
 </script>
 </body>
