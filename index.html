@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Weekly Planner</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -102,7 +103,7 @@
       background: #fff;
       border-radius: 12px;
       padding: 14px 20px;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
       display: flex;
       align-items: center;
@@ -124,18 +125,57 @@
     }
     .progress-count { font-size: 13px; font-weight: 600; color: #5046e5; white-space: nowrap; }
 
+    /* ── Client Filter Bar ── */
+    .filter-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .filter-wrap::-webkit-scrollbar { height: 0; }
+    .filter-label { font-size: 11px; color: #aaa; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px; }
+    .filter-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #e4e6ed;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .filter-pill:hover { border-color: #5046e5; color: #5046e5; }
+    .filter-pill.all-active { background: #5046e5; border-color: #5046e5; color: #fff; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 0 2px;
+      margin-bottom: 12px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #999; }
+    .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .legend-swatch.rec  { background: #8b5cf6; }
+    .legend-swatch.once { background: #60a5fa; }
+
     /* ── Days Grid ── */
     .days-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 10px;
     }
-    @media (max-width: 960px) {
-      .days-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 560px) {
-      .days-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 960px) { .days-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .days-grid { grid-template-columns: 1fr; } }
 
     .day-col {
       background: #fff;
@@ -147,10 +187,9 @@
       transition: box-shadow 0.2s;
     }
     .day-col:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
-
     .day-col.is-today .day-head { background: #5046e5; }
     .day-col.is-today .day-name { color: rgba(255,255,255,0.75); }
-    .day-col.is-today .day-num { color: #fff; }
+    .day-col.is-today .day-num  { color: #fff; }
 
     .day-head {
       background: #f7f8fb;
@@ -159,22 +198,41 @@
       text-align: center;
     }
     .day-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; }
-    .day-num { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .day-num  { font-size: 22px; font-weight: 700; color: #1a1a2e; }
 
     .day-body { padding: 8px; flex: 1; display: flex; flex-direction: column; }
 
+    /* ── Task Items ── */
     .task-item {
       display: flex;
       align-items: flex-start;
       gap: 7px;
-      padding: 7px 6px;
+      padding: 7px 8px 7px 10px;
       border-radius: 7px;
       cursor: pointer;
-      transition: background 0.12s;
       position: relative;
+      margin-bottom: 4px;
+      border-left: 3px solid transparent;
+      transition: opacity 0.12s, filter 0.12s;
     }
-    .task-item:hover { background: #f0f2f7; }
-    .task-item.done .task-text { text-decoration: line-through; color: #bbb; }
+
+    /* Recurring = purple tint */
+    .task-item.is-recurring {
+      background: #f6f2ff;
+      border-left-color: #8b5cf6;
+    }
+    .task-item.is-recurring:hover { background: #ede5ff; }
+
+    /* One-time = blue tint */
+    .task-item.is-oneoff {
+      background: #eff6ff;
+      border-left-color: #60a5fa;
+    }
+    .task-item.is-oneoff:hover { background: #dbeafe; }
+
+    /* Done state */
+    .task-item.done { opacity: 0.55; }
+    .task-item.done .task-text { text-decoration: line-through; color: #aaa; }
 
     .check-circle {
       width: 17px;
@@ -192,7 +250,22 @@
     }
     .task-item.done .check-circle { background: #5046e5; border-color: #5046e5; color: #fff; }
 
-    .task-text { font-size: 12.5px; color: #333; line-height: 1.4; flex: 1; word-break: break-word; }
+    .task-body { flex: 1; min-width: 0; }
+    .task-text { font-size: 12.5px; color: #333; line-height: 1.4; word-break: break-word; }
+    .task-meta { display: flex; align-items: center; gap: 5px; margin-top: 3px; flex-wrap: wrap; }
+
+    .task-time {
+      font-size: 10px;
+      color: #888;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .client-badge {
+      font-size: 9.5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
 
     .recurring-badge {
       font-size: 9px;
@@ -200,10 +273,10 @@
       color: #7c3aed;
       padding: 1px 5px;
       border-radius: 4px;
-      font-weight: 600;
+      font-weight: 700;
       flex-shrink: 0;
       align-self: flex-start;
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     .task-del {
@@ -233,7 +306,7 @@
       font-size: 11.5px;
       color: #bbb;
       transition: all 0.15s;
-      margin-top: 6px;
+      margin-top: 4px;
     }
     .add-row:hover { border-color: #5046e5; color: #5046e5; background: #f5f3ff; }
 
@@ -252,7 +325,7 @@
       margin-bottom: 20px;
     }
     .section-header h2 { font-size: 18px; font-weight: 600; }
-    .section-header p { font-size: 13px; color: #888; margin-top: 3px; }
+    .section-header p  { font-size: 13px; color: #888; margin-top: 3px; }
 
     .btn-primary {
       background: #5046e5;
@@ -276,9 +349,10 @@
       padding: 14px 18px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
       transition: box-shadow 0.15s;
+      border-left: 4px solid #8b5cf6;
     }
     .rec-item:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
 
@@ -291,8 +365,23 @@
       border-radius: 6px;
       min-width: 48px;
       text-align: center;
+      flex-shrink: 0;
+    }
+    .rec-time-tag {
+      font-size: 11px;
+      color: #888;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .rec-item-title { flex: 1; font-size: 14px; color: #333; }
+    .rec-item-client {
+      font-size: 11px;
+      padding: 2px 9px;
+      border-radius: 5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
     .btn-icon {
       background: none;
       border: none;
@@ -302,6 +391,7 @@
       padding: 2px 4px;
       transition: color 0.12s;
       line-height: 1;
+      flex-shrink: 0;
     }
     .btn-icon:hover { color: #ef4444; }
 
@@ -314,7 +404,7 @@
     }
     .empty-box .icon { font-size: 44px; margin-bottom: 14px; }
     .empty-box h3 { font-size: 16px; margin-bottom: 8px; }
-    .empty-box p { font-size: 13px; color: #999; margin-bottom: 20px; }
+    .empty-box p  { font-size: 13px; color: #999; margin-bottom: 20px; }
 
     /* ── Modals ── */
     .overlay {
@@ -333,7 +423,7 @@
       border-radius: 16px;
       padding: 28px;
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       margin: 16px;
       box-shadow: 0 24px 64px rgba(0,0,0,0.18);
       animation: pop .18s ease;
@@ -361,6 +451,8 @@
       border-color: #5046e5;
       box-shadow: 0 0 0 3px rgba(80,70,229,0.12);
     }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; margin-bottom: 0; }
 
     .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; }
     .btn-cancel {
@@ -410,6 +502,13 @@
       <span class="progress-count" id="progCount">0 / 0</span>
     </div>
 
+    <div class="filter-wrap" id="filterBar"></div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch rec"></div> Recurring</div>
+      <div class="legend-item"><div class="legend-swatch once"></div> One-time</div>
+    </div>
+
     <div class="days-grid" id="daysGrid"></div>
   </div>
 
@@ -435,16 +534,28 @@
       <label>Task</label>
       <input type="text" id="taskInput" placeholder="What needs to be done?" maxlength="140" />
     </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Day</label>
+        <select id="taskDay">
+          <option value="Mon">Monday</option>
+          <option value="Tue">Tuesday</option>
+          <option value="Wed">Wednesday</option>
+          <option value="Thu">Thursday</option>
+          <option value="Fri">Friday</option>
+          <option value="Sat">Saturday</option>
+          <option value="Sun">Sunday</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Time</label>
+        <input type="time" id="taskTime" />
+      </div>
+    </div>
     <div class="field">
-      <label>Due Day</label>
-      <select id="taskDay">
-        <option value="Mon">Monday</option>
-        <option value="Tue">Tuesday</option>
-        <option value="Wed">Wednesday</option>
-        <option value="Thu">Thursday</option>
-        <option value="Fri">Friday</option>
-        <option value="Sat">Saturday</option>
-        <option value="Sun">Sunday</option>
+      <label>Client</label>
+      <select id="taskClient">
+        <option value="">— No client —</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -460,18 +571,30 @@
     <div class="modal-title">Add Recurring Task</div>
     <div class="field">
       <label>Task</label>
-      <input type="text" id="recInput" placeholder="e.g. Team standup, Weekly review…" maxlength="140" />
+      <input type="text" id="recInput" placeholder="e.g. Post reel, Weekly review…" maxlength="140" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Repeats every</label>
+        <select id="recDay">
+          <option value="Mon">Monday</option>
+          <option value="Tue">Tuesday</option>
+          <option value="Wed">Wednesday</option>
+          <option value="Thu">Thursday</option>
+          <option value="Fri">Friday</option>
+          <option value="Sat">Saturday</option>
+          <option value="Sun">Sunday</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Time</label>
+        <input type="time" id="recTime" />
+      </div>
     </div>
     <div class="field">
-      <label>Repeats every</label>
-      <select id="recDay">
-        <option value="Mon">Monday</option>
-        <option value="Tue">Tuesday</option>
-        <option value="Wed">Wednesday</option>
-        <option value="Thu">Thursday</option>
-        <option value="Fri">Friday</option>
-        <option value="Sat">Saturday</option>
-        <option value="Sun">Sunday</option>
+      <label>Client</label>
+      <select id="recClient">
+        <option value="">— No client —</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -484,10 +607,18 @@
 <script>
   // ─── Constants ───────────────────────────────────────────────────────────────
   const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const FULL  = { Mon:'Monday', Tue:'Tuesday', Wed:'Wednesday', Thu:'Thursday', Fri:'Friday', Sat:'Saturday', Sun:'Sunday' };
+  const FULL = { Mon:'Monday', Tue:'Tuesday', Wed:'Wednesday', Thu:'Thursday', Fri:'Friday', Sat:'Saturday', Sun:'Sunday' };
+
+  const CLIENT_PALETTE = [
+    { name: 'Lizzy Reels',     color: '#be185d', bg: '#fce7f3' },
+    { name: 'Redeeming Love',  color: '#b45309', bg: '#fef3c7' },
+    { name: 'Rose Lifting',    color: '#065f46', bg: '#d1fae5' },
+    { name: 'Jeff Burningham', color: '#1e40af', bg: '#dbeafe' },
+  ];
 
   // ─── State ───────────────────────────────────────────────────────────────────
-  let weekOffset = 0;
+  let weekOffset   = 0;
+  let clientFilter = null;
 
   // ─── Storage ─────────────────────────────────────────────────────────────────
   function load() {
@@ -499,12 +630,58 @@
     d.recurring   = d.recurring   || [];
     d.tasks       = d.tasks       || {};
     d.completions = d.completions || {};
+    d.clients     = d.clients     || CLIENT_PALETTE.map(c => c.name);
     return d;
   }
 
-  // ─── Week helpers ─────────────────────────────────────────────────────────────
+  // ─── Seed initial clients' recurring tasks ────────────────────────────────────
+  function seedIfEmpty() {
+    const d = db();
+    if (d.recurring.length > 0) return;
+    const seed = [
+      // Lizzy Reels — Tue, Wed, Fri, Sun @ 6 PM
+      { day: 'Tue', time: '18:00', title: 'Post reel',          client: 'Lizzy Reels' },
+      { day: 'Wed', time: '18:00', title: 'Post reel',          client: 'Lizzy Reels' },
+      { day: 'Fri', time: '18:00', title: 'Post reel',          client: 'Lizzy Reels' },
+      { day: 'Sun', time: '18:00', title: 'Post reel',          client: 'Lizzy Reels' },
+      // Redeeming Love — Tue, Thu
+      { day: 'Tue', time: '',      title: 'Post',               client: 'Redeeming Love' },
+      { day: 'Thu', time: '',      title: 'Post',               client: 'Redeeming Love' },
+      // Rose Lifting — Mon–Fri @ 6 PM
+      { day: 'Mon', time: '18:00', title: 'Post',               client: 'Rose Lifting' },
+      { day: 'Tue', time: '18:00', title: 'Post',               client: 'Rose Lifting' },
+      { day: 'Wed', time: '18:00', title: 'Post',               client: 'Rose Lifting' },
+      { day: 'Thu', time: '18:00', title: 'Post',               client: 'Rose Lifting' },
+      { day: 'Fri', time: '18:00', title: 'Post',               client: 'Rose Lifting' },
+      // Jeff Burningham — Wed
+      { day: 'Wed', time: '',      title: 'Deliver 2 new reels', client: 'Jeff Burningham' },
+    ];
+    seed.forEach(t => d.recurring.push({ id: uid(), ...t }));
+    save(d);
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────────
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+  function clientInfo(name) {
+    return CLIENT_PALETTE.find(c => c.name === name) || null;
+  }
+
+  function formatTime(t) {
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour  = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+
+  function timeToMins(t) {
+    if (!t) return Infinity;
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  // ─── Week helpers ─────────────────────────────────────────────────────────────
   function getMonday(date) {
     const d = new Date(date);
     const day = d.getDay();
@@ -536,6 +713,12 @@
 
   function fmt(d) { return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 
+  function esc(s) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(s));
+    return div.innerHTML;
+  }
+
   // ─── Tab switching ────────────────────────────────────────────────────────────
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t,i) => {
@@ -548,33 +731,67 @@
 
   // ─── Week navigation ──────────────────────────────────────────────────────────
   function changeWeek(n) { weekOffset += n; render(); }
-  function goToday() { weekOffset = 0; render(); }
+  function goToday()     { weekOffset  = 0; render(); }
+
+  // ─── Client filter ────────────────────────────────────────────────────────────
+  function setFilter(name) {
+    clientFilter = name;
+    render();
+  }
+
+  function renderFilterBar() {
+    const d   = db();
+    const bar = document.getElementById('filterBar');
+    const isAll = clientFilter === null;
+
+    let html = `<span class="filter-label">Client</span>`;
+    html += `<button class="filter-pill${isAll ? ' all-active' : ''}" onclick="setFilter(null)">All Clients</button>`;
+
+    d.clients.forEach(name => {
+      const info     = clientInfo(name);
+      const isActive = clientFilter === name;
+      const style    = isActive && info ? `background:${info.color};border-color:${info.color};color:#fff;` : '';
+      html += `<button class="filter-pill" style="${style}" onclick="setFilter(${JSON.stringify(name)})">${esc(name)}</button>`;
+    });
+
+    bar.innerHTML = html;
+  }
+
+  // ─── Populate client dropdowns ────────────────────────────────────────────────
+  function populateClientSelects() {
+    const d    = db();
+    const opts = `<option value="">— No client —</option>` +
+      d.clients.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    document.getElementById('taskClient').innerHTML = opts;
+    document.getElementById('recClient').innerHTML  = opts;
+  }
 
   // ─── Modal helpers ────────────────────────────────────────────────────────────
-  function openOverlay(id) {
-    document.getElementById(id).classList.add('open');
-  }
-  function closeOverlay(id) {
-    document.getElementById(id).classList.remove('open');
-  }
+  function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
+  function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
   // ─── Add one-off task ─────────────────────────────────────────────────────────
   function openTaskModal(day) {
+    populateClientSelects();
     document.getElementById('taskModalTitle').textContent = `Add Task — ${FULL[day]}`;
-    document.getElementById('taskDay').value = day;
-    document.getElementById('taskInput').value = '';
+    document.getElementById('taskDay').value    = day;
+    document.getElementById('taskInput').value  = '';
+    document.getElementById('taskTime').value   = '';
+    document.getElementById('taskClient').value = clientFilter || '';
     openOverlay('taskOverlay');
     setTimeout(() => document.getElementById('taskInput').focus(), 80);
   }
 
   function saveTask() {
-    const title = document.getElementById('taskInput').value.trim();
-    const day   = document.getElementById('taskDay').value;
+    const title  = document.getElementById('taskInput').value.trim();
+    const day    = document.getElementById('taskDay').value;
+    const time   = document.getElementById('taskTime').value;
+    const client = document.getElementById('taskClient').value;
     if (!title) return;
-    const d = db();
+    const d  = db();
     const wk = isoWeek(weekDates(weekOffset)[0]);
     d.tasks[wk] = d.tasks[wk] || [];
-    d.tasks[wk].push({ id: uid(), title, day });
+    d.tasks[wk].push({ id: uid(), title, day, time, client });
     save(d);
     closeOverlay('taskOverlay');
     render();
@@ -582,17 +799,22 @@
 
   // ─── Recurring tasks ──────────────────────────────────────────────────────────
   function openRecModal() {
-    document.getElementById('recInput').value = '';
+    populateClientSelects();
+    document.getElementById('recInput').value  = '';
+    document.getElementById('recTime').value   = '';
+    document.getElementById('recClient').value = '';
     openOverlay('recOverlay');
     setTimeout(() => document.getElementById('recInput').focus(), 80);
   }
 
   function saveRecurring() {
-    const title = document.getElementById('recInput').value.trim();
-    const day   = document.getElementById('recDay').value;
+    const title  = document.getElementById('recInput').value.trim();
+    const day    = document.getElementById('recDay').value;
+    const time   = document.getElementById('recTime').value;
+    const client = document.getElementById('recClient').value;
     if (!title) return;
     const d = db();
-    d.recurring.push({ id: uid(), title, day });
+    d.recurring.push({ id: uid(), title, day, time, client });
     save(d);
     closeOverlay('recOverlay');
     renderRecurring();
@@ -628,67 +850,87 @@
     render();
   }
 
-  // ─── Sanitize ─────────────────────────────────────────────────────────────────
-  function esc(s) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(s));
-    return div.innerHTML;
-  }
-
   // ─── Render week view ─────────────────────────────────────────────────────────
   function render() {
-    const d     = db();
-    const dates = weekDates(weekOffset);
-    const wk    = isoWeek(dates[0]);
-    const comp  = d.completions[wk] || {};
+    const d      = db();
+    const dates  = weekDates(weekOffset);
+    const wk     = isoWeek(dates[0]);
+    const comp   = d.completions[wk] || {};
     const manual = d.tasks[wk] || [];
 
     // Header
-    const offset = weekOffset;
+    const off = weekOffset;
     document.getElementById('weekTitle').textContent =
-      offset === 0 ? 'Current Week' :
-      offset  < 0  ? `${Math.abs(offset)} week${Math.abs(offset)>1?'s':''} ago` :
-                     `${offset} week${offset>1?'s':''} ahead`;
+      off === 0 ? 'Current Week' :
+      off  < 0  ? `${Math.abs(off)} week${Math.abs(off)>1?'s':''} ago` :
+                  `${off} week${off>1?'s':''} ahead`;
     document.getElementById('weekRange').textContent = `${fmt(dates[0])} – ${fmt(dates[6])}`;
 
-    // Progress
+    // Progress (counts all tasks, unfiltered)
     let total = 0, done = 0;
     DAYS.forEach(day => {
-      const all = [
-        ...d.recurring.filter(t => t.day === day),
-        ...manual.filter(t => t.day === day)
-      ];
+      const all = [...d.recurring.filter(t => t.day===day), ...manual.filter(t => t.day===day)];
       total += all.length;
       all.forEach(t => { if (comp[t.id]) done++; });
     });
     document.getElementById('progCount').textContent = `${done} / ${total} tasks`;
-    document.getElementById('progFill').style.width = total ? `${(done/total)*100}%` : '0%';
+    document.getElementById('progFill').style.width  = total ? `${(done/total)*100}%` : '0%';
 
-    // Days
+    // Filter bar
+    renderFilterBar();
+
+    // Days grid
     const grid = document.getElementById('daysGrid');
     grid.innerHTML = '';
+
     dates.forEach((date, i) => {
       const day = DAYS[i];
-      const rec = d.recurring.filter(t => t.day === day);
-      const man = manual.filter(t => t.day === day);
-      const allTasks = [...rec.map(t => ({...t, recurring:true})), ...man.map(t => ({...t, recurring:false}))];
+
+      // Get tasks and apply client filter
+      let rec = d.recurring.filter(t => t.day === day);
+      let man = manual.filter(t => t.day === day);
+      if (clientFilter) {
+        rec = rec.filter(t => t.client === clientFilter);
+        man = man.filter(t => t.client === clientFilter);
+      }
+
+      // Merge, mark type, sort by time
+      let allTasks = [
+        ...rec.map(t => ({...t, recurring: true})),
+        ...man.map(t => ({...t, recurring: false})),
+      ];
+      allTasks.sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
 
       let tasksHtml = '';
       allTasks.forEach(t => {
-        const isDone = !!comp[t.id];
-        const checkmark = isDone ? '✓' : '';
+        const isDone     = !!comp[t.id];
+        const checkmark  = isDone ? '✓' : '';
+        const info       = t.client ? clientInfo(t.client) : null;
+        const timeBadge  = t.time ? `<span class="task-time">${formatTime(t.time)}</span>` : '';
+        const clientBadge = info
+          ? `<span class="client-badge" style="background:${info.bg};color:${info.color}">${esc(t.client)}</span>`
+          : '';
+        const typeClass = t.recurring ? 'is-recurring' : 'is-oneoff';
+        const recBadge  = t.recurring ? `<span class="recurring-badge">↻</span>` : '';
+
         if (t.recurring) {
           tasksHtml += `
-            <div class="task-item${isDone?' done':''}" onclick="toggleDone('${t.id}')">
+            <div class="task-item ${typeClass}${isDone?' done':''}" onclick="toggleDone('${t.id}')">
               <div class="check-circle">${checkmark}</div>
-              <div class="task-text">${esc(t.title)}</div>
-              <span class="recurring-badge">↻</span>
+              <div class="task-body">
+                <div class="task-text">${esc(t.title)}</div>
+                <div class="task-meta">${timeBadge}${clientBadge}</div>
+              </div>
+              ${recBadge}
             </div>`;
         } else {
           tasksHtml += `
-            <div class="task-item${isDone?' done':''}">
+            <div class="task-item ${typeClass}${isDone?' done':''}">
               <div class="check-circle" onclick="toggleDone('${t.id}')">${checkmark}</div>
-              <div class="task-text" onclick="toggleDone('${t.id}')">${esc(t.title)}</div>
+              <div class="task-body" onclick="toggleDone('${t.id}')">
+                <div class="task-text">${esc(t.title)}</div>
+                <div class="task-meta">${timeBadge}${clientBadge}</div>
+              </div>
               <button class="task-del" onclick="deleteTask('${t.id}')" title="Remove">×</button>
             </div>`;
         }
@@ -725,13 +967,25 @@
         </div>`;
       return;
     }
-    const sorted = [...d.recurring].sort((a,b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day));
-    list.innerHTML = sorted.map(t => `
-      <div class="rec-item">
-        <span class="rec-day-tag">${t.day}</span>
-        <span class="rec-item-title">${esc(t.title)}</span>
-        <button class="btn-icon" onclick="deleteRecurring('${t.id}')" title="Delete">×</button>
-      </div>`).join('');
+    const sorted = [...d.recurring].sort((a, b) => {
+      const dd = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
+      return dd !== 0 ? dd : timeToMins(a.time) - timeToMins(b.time);
+    });
+    list.innerHTML = sorted.map(t => {
+      const info        = t.client ? clientInfo(t.client) : null;
+      const timeBadge   = t.time ? `<span class="rec-time-tag">${formatTime(t.time)}</span>` : '';
+      const clientBadge = info
+        ? `<span class="rec-item-client" style="background:${info.bg};color:${info.color}">${esc(t.client)}</span>`
+        : '';
+      return `
+        <div class="rec-item">
+          <span class="rec-day-tag">${t.day}</span>
+          ${timeBadge}
+          <span class="rec-item-title">${esc(t.title)}</span>
+          ${clientBadge}
+          <button class="btn-icon" onclick="deleteRecurring('${t.id}')" title="Delete">×</button>
+        </div>`;
+    }).join('');
   }
 
   // ─── Keyboard & overlay click ─────────────────────────────────────────────────
@@ -742,6 +996,7 @@
   document.getElementById('recInput').addEventListener('keydown',  e => { if (e.key==='Enter') saveRecurring(); });
 
   // ─── Boot ─────────────────────────────────────────────────────────────────────
+  seedIfEmpty();
   render();
 </script>
 </body>
