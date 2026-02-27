@@ -389,6 +389,8 @@ const DEFAULT_CLIENTS = [
   {name:'Growth',          color:'#7c3aed'},
 ];
 
+const GCAL_CLIENT_ID = '236976102501-iv2hktjkna2v3e9idaeemscd390r100v.apps.googleusercontent.com';
+
 const SWATCHES = [
   '#ef4444','#f97316','#eab308','#22c55e',
   '#10b981','#06b6d4','#3b82f6','#6366f1',
@@ -414,6 +416,7 @@ function db() {
   d.skips       = d.skips       || {};   // {[wk]: {[recTaskId]: true}}
   d.gcalIds     = d.gcalIds     || {};   // {[taskId]: gcalEventId}
   d.settings    = d.settings    || {};
+  if (!d.settings.gcalClientId) { d.settings.gcalClientId = GCAL_CLIENT_ID; save(d); }
 
   // Init / migrate clients
   if (!d.clients || !d.clients.length) {
