@@ -172,6 +172,10 @@
     .btn-danger:hover { background: #fee2e2; }
     .btn-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
     .btn-success:hover { background: #dcfce7; }
+
+    /* ── Auto-save toast ── */
+    .save-toast { position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 9999; }
+    .save-toast.show { opacity: 1; transform: translateY(0); }
     .whatsapp-steps { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #166534; line-height: 1.7; }
     .whatsapp-steps ol { padding-left: 16px; }
 
@@ -446,6 +450,8 @@
   </div>
 </div>
 
+<div class="save-toast" id="saveToast">&#x2713; Saved</div>
+
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────────
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -478,6 +484,14 @@ let gcalClient   = null;    // GIS tokenClient
 // ── Storage ────────────────────────────────────────────────────────────────────
 function load() { try { return JSON.parse(localStorage.getItem('wp2025')||'{}'); } catch { return {}; } }
 function save(d) { localStorage.setItem('wp2025', JSON.stringify(d)); }
+
+let _toastTimer = null;
+function showSaveToast() {
+  const t = document.getElementById('saveToast');
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
 function db() {
   const d = load();
   d.recurring   = d.recurring   || [];
@@ -877,7 +891,7 @@ function toggleDone(taskId) {
   d.completions[wk]=d.completions[wk]||{};
   if (d.completions[wk][taskId]) delete d.completions[wk][taskId];
   else d.completions[wk][taskId]=true;
-  save(d); render();
+  save(d); showSaveToast(); render();
 }
 
 function deleteTask(id) {
